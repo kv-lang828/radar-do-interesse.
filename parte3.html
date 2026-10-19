@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conversas com Clareza</title>
+<style>
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#100B0D;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:17px;line-height:1.55;overflow-wrap:anywhere}
+#app{max-width:640px;margin:0 auto;padding:0 16px 48px}
+header{padding:22px 0 10px}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;line-height:1.2;margin:.5em 0 .4em}
+h1{font-size:26px;letter-spacing:.04em}h2{font-size:22px}h3{font-size:18px}
+.sub{color:#D2C4C8;margin:.2em 0}
+.busca{position:sticky;top:0;z-index:5;background:#100B0Dee;padding:10px 0;display:flex;gap:8px}
+input{flex:1;min-width:0;font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1px solid #483039;background:#211316;color:#fff}
+::placeholder{color:#a8979c}
+.btn{font:inherit;font-weight:700;font-size:15px;padding:13px 16px;border-radius:12px;border:1px solid #483039;background:#211316;color:#fff;cursor:pointer;min-height:44px}
+.btn.red{background:#F52232;border-color:#F52232;color:#fff}
+.btn.rosa{color:#E9A0AF;border-color:#E9A0AF;background:transparent}
+.btn.full{display:block;width:100%;margin-top:14px;font-size:16px}
+.btn[aria-pressed=true]{background:#E9A0AF;color:#100B0D;border-color:#E9A0AF}
+.btn:focus-visible,input:focus-visible,.msg:focus-visible,.cat:focus-visible{outline:3px solid #E9A0AF;outline-offset:2px}
+.card{background:#211316;border:1px solid #483039;border-radius:16px;padding:6px 16px 16px;margin:14px 0}
+.tag{display:inline-block;color:#E9A0AF;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin:10px 0 0}
+.msg{background:#100B0D;border-left:4px solid #F52232;border-radius:8px;padding:12px 14px;margin:10px 0;user-select:text;-webkit-user-select:text}
+.sec{color:#D2C4C8}.nota{font-size:14px;color:#D2C4C8}
+.linha{display:flex;gap:10px;flex-wrap:wrap}.linha .btn{flex:1 1 150px}
+.st{min-height:22px;color:#E9A0AF;font-size:15px;margin:8px 0 0}
+.cat{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;padding:15px 16px;margin:8px 0;border-radius:14px;border:1px solid #483039;background:#211316;color:#fff;cursor:pointer;min-height:52px}
+.cat b{color:#E9A0AF;font-weight:700}
+.link{background:none;border:0;color:#E9A0AF;font:inherit;padding:12px 0;cursor:pointer}
+.opc{display:block;width:100%;text-align:left;margin:8px 0}
+footer{margin-top:34px;padding-top:16px;border-top:1px solid #483039;font-size:14px;color:#D2C4C8}
+@media(prefers-reduced-motion:no-preference){main{animation:in .25s ease}@keyframes in{from{opacity:0}to{opacity:1}}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <h1>CONVERSAS COM CLAREZA</h1>
+  <p class="sub">Mensagens e perguntas para esclarecer intenções, conversar com confiança e perceber se existe reciprocidade.</p>
+</header>
+<div class="busca" role="search">
+  <input id="busca" type="search" placeholder="Pesquisar (ex.: distante, limite, interesse)" aria-label="Pesquisar mensagens">
+  <button class="btn rosa" id="limpar" type="button" hidden>Limpar</button>
+</div>
+<main id="main" tabindex="-1"></main>
+<footer>Conversas com Clareza é uma ferramenta educativa de apoio à comunicação. Os exemplos são sugestões que devem ser adaptadas à sua realidade. Nenhuma mensagem garante interesse, compromisso ou uma resposta específica. Procure considerar o contexto, respeitar os limites de ambos e comunicar com honestidade.</footer>
+</div>
+<script>
+/* ===================== TEXTOS (edite/traduza aqui) ===================== */
+const BOAS_VINDAS = ["Nem sempre é fácil saber o que dizer quando você gosta de alguém, percebe sinais confusos ou sente que as coisas mudaram.", "Aqui você encontra exemplos de mensagens e perguntas para adaptar à sua situação, comunicar o que sente e entender melhor as respostas que recebe.", "Não existe uma frase mágica para garantir o interesse de alguém. O objetivo é ajudar você a conversar com mais clareza e tomar decisões com mais consciência."];
+const CATEGORIAS = ["Iniciar uma conversa", "Demonstrar interesse", "Entender as intenções", "Quando ele fica distante", "Quando os sinais são confusos", "Conversar sobre reciprocidade", "Expressar sentimentos e limites", "Encerrar uma situação com clareza"];
+const SEC_EXTRA = [["interp", "Como interpretar as respostas"], ["guia", "Guia rápido: qual é o próximo passo?"], ["fav", "Mensagens favoritas"]];
+
+/* 40 mensagens, em ordem: [título, quando usar, mensagem, orientação]. 5 por categoria. */
+const MSG = [
+  ["Começar de forma natural", "Quando você quer iniciar uma conversa sem criar pressão.", "Oi! Lembrei de você e resolvi passar para saber como está seu dia 😊", "Use se essa forma de falar combina com você. Não precisa inventar um motivo elaborado para iniciar uma conversa."],
+  ["Retomar uma conversa", "Quando vocês já conversaram antes, mas ficaram algum tempo sem falar.", "Oi! Faz um tempinho que não conversamos. Como você tem estado?", "Observe se a outra pessoa demonstra vontade de manter a conversa, sem avaliar tudo apenas pela velocidade da resposta."],
+  ["Mostrar curiosidade", "Quando você quer conhecer melhor a pessoa.", "Quero conhecer você melhor. O que você gosta de fazer quando tem um tempo livre?", "Faça perguntas que realmente despertem seu interesse e também compartilhe coisas sobre você."],
+  ["Sugerir um encontro", "Quando existe conversa agradável e você quer saber se a pessoa gostaria de se encontrar.", "Estou gostando das nossas conversas. Você toparia tomar alguma coisa comigo qualquer dia desses?", "Um convite claro permite que a outra pessoa responda com liberdade. Se ela não puder, observe se sugere outra ocasião."],
+  ["Saber se a conversa é recíproca", "Quando você sente que está sempre iniciando as conversas.", "Gosto de conversar com você, mas às vezes fico na dúvida se você também tem vontade de manter contato. Como você vê isso?", "Expresse sua percepção sem transformar a conversa numa cobrança."],
+
+  ["Mostrar que gosta de conversar", "Quando você quer demonstrar interesse sem fazer uma declaração intensa.", "Gosto de conversar com você. Nossas conversas têm sido uma parte boa dos meus dias.", "Demonstre o que realmente sente, sem exagerar para obter uma reação específica."],
+  ["Demonstrar interesse em conhecer melhor", "Quando existe atração, mas você ainda está conhecendo a pessoa.", "Você me despertou curiosidade e tenho vontade de conhecer você melhor. Gostaria de saber se você também sente essa vontade.", "A resposta pode ajudar a esclarecer a disponibilidade da pessoa, mas não determina sozinha o futuro da relação."],
+  ["Fazer um convite direto", "Quando você prefere demonstrar interesse de maneira clara.", "Vou ser sincera: tenho interesse em conhecer você melhor. Você também tem interesse em mim?", "Ser direta não significa pressionar. Esteja preparada para ouvir uma resposta diferente da que gostaria."],
+  ["Verificar a disponibilidade", "Quando você não sabe se a pessoa está aberta a conhecer alguém romanticamente.", "Posso te fazer uma pergunta? Você está aberto a conhecer alguém com intenção de construir alguma coisa ou prefere algo sem compromisso neste momento?", "Adapte a pergunta ao nível de intimidade e ao momento da relação."],
+  ["Avançar com tranquilidade", "Quando ambos demonstram interesse e você quer dar um próximo passo.", "Estou gostando de conhecer você e queria continuar vendo como as coisas evoluem. Você está na mesma sintonia?", "Procure uma resposta sincera, não uma promessa de futuro."],
+
+  ["Perguntar o que procura", "Quando a relação começa a ganhar importância e você quer compreender as expectativas da pessoa.", "Queria entender melhor o que você procura neste momento: conhecer alguém sem compromisso ou estar aberto a uma relação mais séria?", "Não existe uma resposta universalmente certa. O importante é perceber se as expectativas de vocês são compatíveis."],
+  ["Esclarecer uma situação indefinida", "Quando vocês se aproximaram, mas nunca conversaram sobre o que isso significa.", "Gosto da nossa aproximação, mas prefiro não ficar fazendo suposições. Como você enxerga o que está acontecendo entre nós?", "Escolha um momento em que ambos possam conversar com calma."],
+  ["Perguntar sobre exclusividade", "Quando a relação avançou e você quer conversar sobre exclusividade.", "Quero conversar sobre algo importante para mim. Você sente vontade de construir uma relação exclusiva comigo ou ainda prefere continuar conhecendo outras pessoas?", "Não presuma que exclusividade existe sem uma conversa clara e um acordo entre vocês."],
+  ["Saber se existe intenção de avançar", "Quando existe proximidade, mas você não sabe se a pessoa quer desenvolver a relação.", "Você sente que nossa relação está caminhando para alguma coisa ou prefere que continuemos sem definir nada por enquanto?", "Considere a resposta em conjunto com o comportamento ao longo do tempo."],
+  ["Pedir honestidade", "Quando você precisa de clareza para decidir o que deseja fazer.", "Prefiro uma resposta sincera, mesmo que não seja exatamente o que espero. Você tem interesse em continuar construindo essa aproximação comigo?", "A honestidade da outra pessoa é importante, mas você também pode decidir o que é adequado para suas necessidades."],
+
+  ["Perceber uma mudança", "Quando você nota uma mudança persistente na comunicação.", "Tenho percebido que nossa comunicação mudou um pouco. Está acontecendo alguma coisa ou você está precisando de mais espaço?", "Descreva o que percebeu sem presumir que a mudança significa desinteresse."],
+  ["Perguntar se está tudo bem", "Quando a pessoa parece menos comunicativa e você quer verificar como ela está.", "Oi! Notei que você tem estado mais quieto ultimamente. Está tudo bem com você?", "Dê espaço para uma resposta sem exigir que a pessoa explique imediatamente tudo o que está acontecendo."],
+  ["Abordar a falta de iniciativa", "Quando você sente que é responsável por iniciar quase todas as conversas.", "Gosto de falar com você, mas tenho sentido que geralmente sou eu quem inicia as conversas. Queria saber como você se sente em relação a manter esse contato.", "O objetivo é esclarecer a dinâmica entre vocês, não obrigar a pessoa a falar com determinada frequência."],
+  ["Pedir clareza depois de uma mudança", "Quando a pessoa demonstrava proximidade e agora parece menos disponível.", "Antes sentia mais proximidade entre nós e agora percebo uma diferença. Queria entender se alguma coisa mudou para você.", "Evite apresentar sua interpretação como um fato. A outra pessoa pode ter uma perspectiva diferente."],
+  ["Respeitar o espaço sem ficar indefinidamente esperando", "Quando a pessoa diz que precisa de espaço.", "Entendo que você precise de espaço e respeito isso. Também preciso cuidar das minhas expectativas, então, quando você se sentir disponível para conversar, podemos esclarecer o que queremos.", "Respeitar o espaço da outra pessoa não significa que você precise suspender indefinidamente as suas próprias necessidades."],
+
+  ["Aproximação e afastamento", "Quando a pessoa alterna entre muita proximidade e distância.", "Às vezes sinto você muito próximo e outras vezes bastante distante. Queria entender como você vê nossa relação.", "Observe se a pessoa consegue conversar sobre a diferença que você percebeu."],
+  ["Palavras e atitudes diferentes", "Quando as palavras parecem demonstrar interesse, mas os comportamentos deixam dúvidas.", "Gosto do que conversamos, mas para mim também é importante perceber consistência nas atitudes. Como você vê isso entre nós?", "Considere exemplos concretos, em vez de tirar conclusões com base num único episódio."],
+  ["Entender uma resposta vaga", "Quando a pessoa responde de maneira ambígua a uma pergunta importante.", "Entendo que talvez você ainda não tenha uma resposta definitiva. Para mim, é importante saber se existe vontade de continuar conhecendo um ao outro.", "Você pode aceitar que alguém precise de tempo, sem deixar de considerar quanto tempo está disposta a esperar."],
+  ["Perguntar sobre o que mudou", "Quando você percebe uma alteração no comportamento e quer conversar sobre isso.", "Senti uma mudança na nossa dinâmica e queria saber se você também percebeu. Aconteceu alguma coisa que acha importante conversarmos?", "Faça a pergunta num momento tranquilo e escute a resposta antes de tirar conclusões."],
+  ["Sair da especulação", "Quando você passa muito tempo tentando interpretar cada mensagem ou atitude.", "Percebi que estou tentando adivinhar o que você sente, e prefiro conversar com clareza. Como você realmente vê nossa aproximação?", "A conversa pode ajudar a reduzir as suposições, mas não elimina a necessidade de observar comportamentos ao longo do tempo."],
+
+  ["Falar sobre iniciativa", "Quando você quer que a iniciativa de conversar seja mais equilibrada.", "Para mim, é importante sentir que os dois têm vontade de manter contato. Como você se sente em relação à nossa comunicação?", "Reciprocidade não significa que as duas pessoas precisam agir exatamente da mesma forma todos os dias."],
+  ["Conversar sobre disponibilidade", "Quando a pessoa parece interessada, mas raramente tem disponibilidade.", "Gosto da nossa aproximação, mas também valorizo a disponibilidade para estarmos presentes um para o outro. Você sente que tem espaço para isso neste momento?", "Considere a realidade de cada pessoa e a compatibilidade entre as necessidades de ambos."],
+  ["Falar sobre expectativas", "Quando você percebe que talvez espere coisas diferentes da relação.", "Queria conversar sobre as nossas expectativas para entender se estamos procurando coisas compatíveis.", "Fale sobre o que você deseja e pergunte o que a outra pessoa deseja, sem transformar a conversa numa negociação forçada."],
+  ["Pedir mais clareza", "Quando você sente que as conversas importantes são sempre adiadas.", "Não precisamos resolver tudo agora, mas gostaria que conseguíssemos conversar com sinceridade sobre o que estamos vivendo.", "Uma conversa adiada ocasionalmente é diferente de um padrão persistente de evitar qualquer esclarecimento."],
+  ["Avaliar se ambos querem continuar", "Quando você precisa compreender se os dois estão dispostos a investir na aproximação.", "Eu tenho vontade de continuar conhecendo você, mas queria saber se essa vontade também existe do seu lado.", "Procure uma resposta clara e considere também o que acontece depois da conversa."],
+
+  ["Dizer o que você sente", "Quando você quer compartilhar os seus sentimentos de forma honesta.", "Quero ser sincera sobre o que sinto. Tenho gostado de me aproximar de você e achei importante dizer isso.", "Expresse o que sente sem exigir que a outra pessoa sinta exatamente o mesmo."],
+  ["Explicar uma necessidade", "Quando você quer comunicar algo importante para se sentir confortável numa relação.", "Para mim, uma relação saudável precisa de comunicação e clareza. Queria saber se isso também é importante para você.", "Fale sobre suas necessidades como algo que você valoriza, sem apresentar suas preferências como regras universais."],
+  ["Estabelecer um limite", "Quando a dinâmica atual está deixando você desconfortável.", "Gosto de você, mas esta situação indefinida não está sendo boa para mim. Preciso de mais clareza para decidir como quero continuar.", "Um limite descreve o que você precisa e o que está disposta a aceitar. Não é uma ameaça para conseguir uma reação."],
+  ["Dizer que não quer pressionar", "Quando deseja abrir uma conversa importante sem exigir uma decisão imediata.", "Não quero pressionar você a sentir ou decidir alguma coisa. Só quero que possamos ser honestos sobre o que cada um deseja.", "Dê espaço para a outra pessoa responder, mas respeite também os seus próprios limites."],
+  ["Pedir uma conversa presencial", "Quando uma questão importante está difícil de resolver por mensagens.", "Acho que este assunto merece uma conversa com calma. Você teria disponibilidade para conversarmos pessoalmente?", "Escolha uma situação segura e confortável para ambos. Não insista se a outra pessoa não quiser se encontrar."],
+
+  ["Quando os objetivos são diferentes", "Quando você percebe que deseja algo diferente daquilo que a outra pessoa pode oferecer.", "Gostei de conhecer você, mas percebo que talvez estejamos procurando coisas diferentes. Prefiro reconhecer isso com sinceridade.", "Diferenças de objetivos não precisam transformar ninguém no culpado."],
+  ["Quando você não quer continuar na indefinição", "Quando a situação já foi discutida e continua sem a clareza de que você precisa.", "Respeito o seu tempo e a sua forma de ver as coisas, mas também preciso respeitar o que é importante para mim. Neste momento, prefiro dar um passo atrás.", "Você pode se afastar de uma situação que não faz bem a você, mesmo sem ter todas as respostas."],
+  ["Encerrar com respeito", "Quando você decidiu que não deseja continuar a aproximação.", "Obrigada pelos momentos que compartilhamos. Pensei sobre o que quero e decidi que é melhor não continuar esta aproximação. Desejo que fique tudo bem entre nós.", "Seja clara e respeitosa. Não precisa prolongar uma decisão apenas para evitar desagradar a outra pessoa."],
+  ["Responder a uma proposta incompatível", "Quando a outra pessoa quer algo diferente do que você procura.", "Entendo e respeito o que você procura, mas percebo que não é exatamente o que eu quero neste momento. Prefiro ser honesta sobre isso.", "Não é necessário convencer alguém a querer o mesmo que você."],
+  ["Reafirmar a própria decisão", "Quando você já explicou a sua decisão e a outra pessoa continua tentando reabrir a conversa.", "Entendo que você veja a situação de outra maneira, mas a minha decisão continua a mesma. Peço que respeite isso.", "Você não precisa justificar repetidamente um limite que já comunicou com clareza."]
+];
+
+const INTERP_INTRO = "Uma mensagem isolada raramente explica toda uma relação. Para compreender melhor uma situação, considere o conteúdo da resposta, o contexto, a comunicação ao longo do tempo e a compatibilidade entre aquilo que cada pessoa deseja.";
+const INTERP = [
+  ["Resposta clara", "“Também tenho interesse em você e quero continuar conhecendo você.”", "A pessoa expressa diretamente o seu interesse.", "Continue a conhecer a pessoa e observe se existe coerência entre a comunicação e as atitudes.", "Uma declaração de interesse não garante compromisso futuro."],
+  ["Resposta indefinida", "“Vamos ver o que acontece.”", "A pessoa não está apresentando uma intenção concreta.", "Se a clareza for importante para você, pode perguntar o que ela está disponível para construir neste momento.", "Uma resposta indefinida pode ter diferentes razões. Não prova automaticamente desinteresse."],
+  ["Pedido de tempo", "“Preciso de algum tempo para entender o que quero.”", "A pessoa está comunicando que ainda não tem uma decisão.", "Você pode perguntar se faz sentido voltarem a conversar depois de algum tempo e decidir quanto tempo está confortável em esperar.", "Respeitar o tempo de alguém não exige ignorar as suas próprias necessidades."],
+  ["Palavras sem continuidade", "A pessoa diz que deseja manter contato, mas raramente participa das conversas ou cumpre os planos combinados.", "Existe uma possível diferença entre aquilo que é dito e aquilo que acontece.", "Aborde a diferença com calma e observe se existe disposição para conversar e ajustar a dinâmica.", "Considere o contexto e os padrões, não um único episódio."],
+  ["Recusa clara", "“Não tenho interesse em desenvolver uma relação romântica.”", "A pessoa comunicou diretamente a sua decisão.", "Respeite a resposta e decida como deseja seguir em frente.", "Não tente transformar uma recusa em um desafio a superar."]
+];
+
+const GUIA_INTRO = "Escolha a situação que mais se aproxima da sua realidade.";
+const GUIA = [
+  ["Ainda estamos começando a conversar.", "Comece com uma conversa natural. Não precisa definir toda a relação de imediato.", [1, 2, 3]],
+  ["Quero saber se existe interesse romântico.", "Você pode demonstrar o seu interesse ou perguntar diretamente se a vontade de aproximação é recíproca.", [7, 8, 9]],
+  ["A comunicação mudou.", "Descreva a mudança que percebeu e dê espaço para uma resposta. Evite presumir o motivo antes de conversar.", [16, 17, 19]],
+  ["Sinto que sou eu quem faz todo o esforço.", "Explique como percebe a dinâmica e pergunte como a outra pessoa vê a comunicação entre vocês.", [18, 26, 30]],
+  ["Não sabemos o que queremos um do outro.", "Converse sobre expectativas, intenções e compatibilidade, sem exigir uma decisão para a qual a outra pessoa não está preparada.", [11, 12, 14]],
+  ["Já conversei, mas continuo sem clareza.", "Observe se existem mudanças concretas depois da conversa. Se a indefinição continuar, decida quanto tempo e energia deseja investir.", [23, 29, 33]],
+  ["Quero expressar um limite.", "Comunique o que você precisa e o que fará para cuidar do seu bem-estar. Um limite não deve depender de conseguir controlar a outra pessoa.", [32, 33, 34]],
+  ["Quero encerrar a aproximação.", "Você pode encerrar uma aproximação de forma clara e respeitosa, mesmo quando a outra pessoa não concorda com a sua decisão.", [36, 38, 40]]
+];
+const FAV_VAZIO = "Você ainda não salvou nenhuma mensagem. Explore as categorias e marque as que deseja consultar mais tarde.";
+const FAV_NOTA = "Seus favoritos ficam guardados apenas neste navegador e não são sincronizados entre dispositivos.";
+const SEM_RESULTADO = "Não encontramos mensagens para essa pesquisa. Experimente outra palavra ou explore as categorias.";
+
+/* ===================== LÓGICA ===================== */
+const CHAVE_FAV = "ccl_favoritos";
+let favs = [], memoria = null;
+try { favs = JSON.parse(localStorage.getItem(CHAVE_FAV)) || []; } catch (e) { favs = []; }
+if (!Array.isArray(favs)) favs = [];
+function salvarFavs() { try { localStorage.setItem(CHAVE_FAV, JSON.stringify(favs)); } catch (e) {} }
+
+const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const catDe = i => Math.floor(i / 5);
+const h = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+const rot = (txt, val) => { const p = h("p"); p.append(h("strong", null, txt + " "), val); return p; };
+const bt = (x, f, c) => { const b = h("button", "btn " + (c || "")); b.type = "button"; b.textContent = x; b.onclick = f; return b; };
+const irPara = v => { location.hash = v; };
+
+function copiarReserva(texto) {
+  const t = document.createElement("textarea"); t.value = texto; t.style.position = "fixed"; t.style.opacity = "0";
+  document.body.appendChild(t); t.select(); let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {} t.remove(); return ok;
+}
+function selecionar(el) { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+async function copiar(i, st, elMsg) {
+  const texto = MSG[i][2]; let ok = false;
+  try { await navigator.clipboard.writeText(texto); ok = true; } catch (e) { ok = copiarReserva(texto); }
+  if (ok) { st.textContent = "Mensagem copiada!"; setTimeout(() => { if (st.textContent === "Mensagem copiada!") st.textContent = ""; }, 2500); }
+  else { selecionar(elMsg); st.textContent = "Não foi possível copiar automaticamente. O texto foi selecionado: use a opção Copiar do seu navegador."; }
+}
+
+function cartao(i) {
+  const [t, q, m, o] = MSG[i], c = h("article", "card"), st = h("p", "st"), elMsg = h("p", "msg", m);
+  st.setAttribute("role", "status"); elMsg.tabIndex = 0;
+  c.append(h("p", "tag", "Mensagem " + (i + 1) + " · " + CATEGORIAS[catDe(i)]), h("h3", null, t), rot("Quando usar:", q), elMsg, rot("Orientação:", o));
+  const fav = bt("", () => {
+    const k = favs.indexOf(i); if (k >= 0) favs.splice(k, 1); else favs.push(i);
+    salvarFavs(); if (location.hash === "#fav") render(); else pintar();
+  }, "rosa");
+  const pintar = () => { const on = favs.includes(i); fav.textContent = on ? "★ Remover dos favoritos" : "☆ Adicionar aos favoritos"; fav.setAttribute("aria-pressed", on); };
+  pintar();
+  const l = h("div", "linha"); l.append(bt("Copiar mensagem", () => copiar(i, st, elMsg), "red"), fav);
+  c.append(l, st); return c;
+}
+const voltar = () => { const b = bt("← Voltar às categorias", () => irPara(""), "link"); b.className = "link"; return b; };
+
+function telaInicio(m) {
+  m.append(h("h2", null, "Encontre as palavras certas para conversar sobre o que está acontecendo na sua vida amorosa."));
+  BOAS_VINDAS.forEach(p => m.appendChild(h("p", "sec", p)));
+  m.append(bt("ENCONTRAR UMA MENSAGEM", () => { const a = document.getElementById("categorias"); a.scrollIntoView(); a.focus(); }, "red full"));
+  m.append(h("p", "nota", "Escolha uma situação e veja exemplos que você pode adaptar e copiar."));
+  const sec = h("section"); sec.id = "categorias"; sec.tabIndex = -1; sec.appendChild(h("h2", null, "Categorias"));
+  CATEGORIAS.forEach((n, k) => { const b = h("button", "cat"); b.type = "button"; b.append(h("span", null, (k + 1) + ". " + n), h("b", null, "5 ›")); b.onclick = () => irPara("c" + k); sec.appendChild(b); });
+  SEC_EXTRA.forEach(([id, n], k) => { const b = h("button", "cat"); b.type = "button"; b.append(h("span", null, (k + 9) + ". " + n), h("b", null, "›")); b.onclick = () => irPara(id); sec.appendChild(b); });
+  m.appendChild(sec);
+}
+function telaCategoria(m, k) {
+  m.append(voltar(), h("h2", null, (k + 1) + ". " + CATEGORIAS[k]));
+  for (let i = k * 5; i < k * 5 + 5; i++) m.appendChild(cartao(i));
+  m.appendChild(voltar());
+}
+function telaInterp(m) {
+  m.append(voltar(), h("h2", null, "COMO ENTENDER AS RESPOSTAS SEM TIRAR CONCLUSÕES PRECIPITADAS"), h("p", "sec", INTERP_INTRO));
+  INTERP.forEach(([t, ex, ob, pr, im], i) => {
+    const c = h("article", "card"); c.append(h("p", "tag", "Cartão " + (i + 1)), h("h3", null, t), rot("Exemplo:", ex), rot("O que observar:", ob), rot("Próximo passo:", pr), rot("Importante:", im)); m.appendChild(c);
+  });
+  m.appendChild(voltar());
+}
+function telaGuia(m) {
+  m.append(voltar(), h("h2", null, "Guia rápido: qual é o próximo passo?"), h("p", "sec", GUIA_INTRO));
+  const lista = h("div"), out = h("div"); out.setAttribute("aria-live", "polite"); const bs = [];
+  GUIA.forEach(([t, o, ids], k) => {
+    const b = bt((k + 1) + ". " + t, () => {
+      bs.forEach((x, j) => x.setAttribute("aria-pressed", j === k)); out.innerHTML = "";
+      const c = h("div", "card"); c.append(h("h3", null, "Orientação"), h("p", null, o)); out.appendChild(c); ids.forEach(n => out.appendChild(cartao(n - 1)));
+    }, "opc"); b.setAttribute("aria-pressed", "false"); bs.push(b); lista.appendChild(b);
+  });
+  m.append(lista, out, voltar());
+}
+function telaFav(m) {
+  m.append(voltar(), h("h2", null, "11. Mensagens favoritas"));
+  const v = favs.filter(i => MSG[i]);
+  if (!v.length) { const c = h("div", "card"); c.appendChild(h("p", null, FAV_VAZIO)); m.appendChild(c); } else v.forEach(i => m.appendChild(cartao(i)));
+  m.appendChild(h("p", "nota", FAV_NOTA)); m.appendChild(voltar());
+}
+function telaBusca(m, q) {
+  const n = norm(q).trim();
+  const achou = MSG.map((x, i) => i).filter(i => norm([MSG[i][0], MSG[i][1], MSG[i][2], MSG[i][3], CATEGORIAS[catDe(i)]].join(" ")).includes(n));
+  m.appendChild(h("h2", null, "Resultados da pesquisa (" + achou.length + ")"));
+  if (!achou.length) { const c = h("div", "card"); c.appendChild(h("p", null, SEM_RESULTADO)); m.appendChild(c); } else achou.forEach(i => m.appendChild(cartao(i)));
+}
+
+function render() {
+  const m = document.getElementById("main"), q = document.getElementById("busca").value;
+  document.getElementById("limpar").hidden = !q; m.innerHTML = "";
+  if (norm(q).trim()) { telaBusca(m, q); return; }
+  const v = location.hash.slice(1);
+  if (/^c[0-7]$/.test(v)) telaCategoria(m, +v[1]); else if (v === "interp") telaInterp(m); else if (v === "guia") telaGuia(m); else if (v === "fav") telaFav(m); else telaInicio(m);
+}
+if (typeof window !== "undefined" && document.getElementById("main")) {
+  document.getElementById("busca").addEventListener("input", render);
+  document.getElementById("limpar").onclick = () => { document.getElementById("busca").value = ""; render(); document.getElementById("busca").focus(); };
+  window.addEventListener("hashchange", () => { render(); window.scrollTo(0, 0); });
+  render();
+}
+</script>
+</body>
+</html>
