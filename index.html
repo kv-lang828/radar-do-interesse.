@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radar do Interesse — Análise Completa</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#fbf5ee;color:#3a2630;line-height:1.55;font-size:17px}
+#app{max-width:600px;margin:0 auto;padding:16px 16px 60px}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;line-height:1.2;color:#6b1f3a;margin:.6em 0 .4em}
+h1{font-size:28px}h2{font-size:23px}h3{font-size:18px}
+.tela{animation:in .3s ease}@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.tela{animation:none}.barra{transition:none}}
+.topo{position:sticky;top:0;background:#fbf5eeee;padding:8px 0 10px;z-index:5}
+.prog{height:7px;background:#f0d9d9;border-radius:9px;overflow:hidden}
+.barra{height:100%;background:#b8456b;transition:width .4s}
+.linha{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:6px;font-size:14px;color:#85626f}
+select{font:inherit;font-size:14px;max-width:60%;padding:6px;border:1px solid #e3c4cf;border-radius:10px;background:#fff;color:#3a2630}
+.card{background:#fff;border-radius:16px;padding:4px 18px 14px;margin:14px 0;box-shadow:0 3px 14px #6b1f3a14;border:1px solid #f1dfe4}
+.apoio{color:#6b5560}.nota{font-size:13px;color:#85626f;margin-top:22px}.aviso{background:#fff0f3;border-left:4px solid #b8456b;padding:10px 14px;border-radius:8px}
+.btn{display:block;width:100%;padding:16px;margin-top:16px;border:0;border-radius:14px;background:#6b1f3a;color:#fff;font-family:inherit;font-weight:700;font-size:16px;cursor:pointer}
+.btn.sec{background:#fff;color:#6b1f3a;border:2px solid #d9a7b8}
+.btn.peq{display:inline-block;width:auto;padding:10px 16px;font-size:15px;margin-top:10px}
+.btn:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #b8456b;outline-offset:2px}
+.link{background:none;border:0;color:#8a3a58;font:inherit;font-size:15px;padding:8px 0;cursor:pointer}
+textarea{width:100%;font:inherit;font-size:16px;padding:12px;border:1.5px solid #dcb9c6;border-radius:12px;background:#fffdfb;color:#3a2630;margin-top:6px}
+.lab{display:block;font-weight:600;margin-top:12px}.ok{color:#2f7a4f;font-size:14px;min-height:20px;margin:4px 0 0}
+.exp{background:#fff6f8;border-radius:12px;padding:2px 14px 8px;margin-top:10px}
+.tag{display:inline-block;background:#f6dce4;color:#6b1f3a;font-weight:700;border-radius:99px;padding:2px 12px;font-size:14px;margin-top:12px}
+.feito{color:#2f7a4f;font-weight:700}
+ul{padding-left:20px;margin:.4em 0}li{margin:.25em 0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ======================================================================
+   RADAR DO INTERESSE — ANÁLISE COMPLETA (produto pago, R$ 12,97)
+   COMO O PERFIL CHEGA: (1) parâmetro ?perfil=C|O|R|E no endereço, ou
+   (2) salvo pelo quiz grátis, se estiver no MESMO domínio, ou (3) a usuária
+   escolhe o resultado que recebeu. O parâmetro serve só para personalizar.
+   ACESSO PÓS-COMPRA: este ficheiro NÃO verifica pagamento. Se o endereço for
+   um link direto, qualquer pessoa com o link consegue abrir. Para restringir,
+   use a área de membros / página de entrega da plataforma de vendas.
+   ====================================================================== */
+const NOMES = { C: "Interesse com Consistência", O: "Interesse com Oscilações", R: "Atenção sem Reciprocidade Clara", E: "Ainda é Cedo para Concluir" };
+const ETAPAS = ["Boas-vindas", "Mapa do comportamento", "Análise do seu perfil", "Os 10 sinais", "Erros de interpretação", "Plano de 7 dias", "Como conversar", "O que fazer a seguir", "Resumo"];
+const AVISO = "O Radar do Interesse é uma ferramenta de orientação e reflexão. Não é um teste psicológico, um diagnóstico científico nem um método comprovado para descobrir sentimentos ocultos. As interpretações são possibilidades, não certezas.";
+const ARMAZENAMENTO = "Suas anotações ficam salvas só neste navegador, neste aparelho, e não são enviadas a nenhum servidor. Se você limpar os dados do navegador, trocar de aparelho ou usar outro navegador, elas podem ser perdidas.";
+
+/* ---------- TEXTOS ---------- */
+const BEM_VINDA = [
+  "Agora é hora de olhar para essa situação com mais clareza.",
+  "Você vai analisar os comportamentos que realmente importam, distinguir sinais consistentes de atitudes ambíguas e identificar o que pode fazer a seguir sem depender de suposições.",
+  "Esta análise não pretende adivinhar o que ele sente. O objetivo é ajudar você a compreender melhor o que está acontecendo, com base em comportamentos observáveis."
+];
+const BENEFICIOS = ["Entenda o que determinados comportamentos podem indicar.", "Descubra quais sinais merecem mais atenção.", "Aprenda a distinguir interesse de simples atenção.", "Observe os padrões ao longo do tempo.", "Saiba como conversar sem pressionar nem ignorar suas próprias necessidades."];
+
+const MAPA = [
+  ["INICIATIVA", "Quem costuma procurar quem?",
+    ["A iniciativa pode ajudar você a compreender como a aproximação está acontecendo. Quando uma pessoa também procura contato, faz perguntas e demonstra vontade de conversar, isso pode indicar participação na interação.", "Entretanto, a iniciativa varia de pessoa para pessoa. O mais importante é observar o padrão, o contexto e a participação dos dois."],
+    ["Ele também inicia conversas?", "Procura você apenas quando precisa de alguma coisa?", "Demonstra vontade de continuar a conversa?", "Existe equilíbrio na iniciativa ao longo do tempo?"]],
+  ["COMUNICAÇÃO", "A comunicação é recíproca ou depende quase sempre de você?",
+    ["A frequência das mensagens não revela, sozinha, o interesse de uma pessoa. Algumas pessoas têm hábitos de comunicação diferentes, compromissos ou limitações de tempo.", "Por isso, é importante observar não apenas a quantidade de mensagens, mas também a qualidade da interação e a disposição de ambos para manter o contato."],
+    ["Ele participa espontaneamente das conversas?", "Demonstra interesse no que você diz?", "Responde de maneira compatível com o tipo de conversa?", "Você sente que precisa sustentar toda a interação?"]],
+  ["CONSISTÊNCIA", "As atitudes dele combinam com aquilo que diz?",
+    ["A consistência ajuda a compreender se existe coerência entre palavras e ações.", "Uma situação isolada não define uma pessoa. Entretanto, padrões repetidos podem oferecer informações importantes sobre a disponibilidade e a confiabilidade de alguém."],
+    ["Ele cumpre os combinados?", "Mantém contato depois de demonstrar interesse?", "Explica mudanças relevantes na comunicação?", "Existe uma diferença recorrente entre o que diz e o que faz?"]],
+  ["RECIPROCIDADE", "Os dois estão contribuindo para a aproximação?",
+    ["Reciprocidade não significa que cada pessoa precise tomar exatamente metade das iniciativas.", "Significa que existe participação dos dois, considerando as circunstâncias, os limites e as possibilidades de cada um."],
+    ["Você é sempre responsável por iniciar as conversas?", "Ele demonstra curiosidade sobre sua vida?", "Também procura oportunidades para estar com você?", "Você sente que existe esforço dos dois lados?"]]
+];
+
+const PERFIS = {
+  C: { indica: ["Quando uma pessoa procura contato, demonstra curiosidade, participa da aproximação e mantém atitudes relativamente consistentes, isso pode ser compatível com interesse genuíno.", "No entanto, esses comportamentos não confirmam, por si só, que ele deseja um relacionamento ou que pretende o mesmo que você.", "É importante observar a evolução da interação e, quando fizer sentido, conversar diretamente sobre as expectativas de cada um."],
+    atencao: ["Ele toma iniciativa sem depender sempre de você?", "Demonstra curiosidade pela sua vida?", "Procura oportunidades para conversar ou estar com você?", "Respeita seus limites?", "As atitudes correspondem às palavras?", "Existe espaço para você expressar o que deseja?"],
+    evTit: "O que você pode estar interpretando mal",
+    evitar: ["É possível confundir atenção com compromisso.", "Alguém pode gostar de conversar com você e, ainda assim, não estar preparado ou interessado em uma relação.", "Também é importante não transformar pequenos gestos em provas definitivas de sentimentos."],
+    prox: ["Continue conhecendo essa pessoa sem antecipar conclusões.", "Observe se existe compatibilidade entre o comportamento dele, os seus objetivos e a forma como você deseja ser tratada.", "Se a aproximação continuar evoluindo, uma conversa clara pode ajudar vocês a compreenderem melhor as expectativas um do outro."],
+    botao: "QUERO ENTENDER MEU PRÓXIMO PASSO →" },
+  O: { indica: ["Se ele demonstra proximidade em alguns momentos e depois fica distante, existem várias explicações possíveis.", "Pode haver diferenças nos hábitos de comunicação, limitações de tempo, incerteza sobre a relação ou falta de disponibilidade. Também pode existir interesse inconsistente.", "Não é possível distinguir essas possibilidades apenas pela frequência das mensagens.", "Por isso, o mais útil é observar se existe um padrão recorrente e considerar o contexto."],
+    atencao: ["As oscilações acontecem repetidamente?", "Ele explica quando fica menos disponível?", "Retoma o contato por iniciativa própria?", "Demonstra interesse por meio de outras atitudes?", "Existe coerência entre o que diz e o que faz?", "Você sente que precisa fazer todo o esforço para manter a aproximação?"],
+    evTit: "O que você deve evitar",
+    evitar: ["Não transforme cada mensagem em uma prova de interesse ou desinteresse.", "Também não precisa justificar indefinidamente um padrão que deixa você desconfortável.", "É possível considerar as circunstâncias de outra pessoa sem ignorar as suas próprias necessidades."],
+    prox: ["Observe o padrão geral e, se a relação permitir, converse com ele sobre as expectativas de comunicação.", "Preste atenção à maneira como ele responde à conversa e se existe disposição para encontrar um entendimento."],
+    botao: "QUERO SABER COMO ABORDAR O ASSUNTO →" },
+  R: { indica: ["Ele pode gostar da sua atenção, apreciar as conversas ou sentir alguma atração sem necessariamente querer aprofundar a relação.", "Também pode existir uma diferença entre aquilo que cada um considera uma aproximação romântica.", "A questão não é descobrir a qualquer custo o que ele sente. É avaliar se o que está acontecendo corresponde ao que você procura."],
+    atencao: ["Você inicia quase todas as conversas?", "Ele aparece sobretudo quando precisa de atenção?", "Demonstra curiosidade pela sua vida?", "Faz algum esforço para manter a aproximação?", "Existe disponibilidade para conversar e se conhecerem?", "Suas necessidades também são consideradas?"],
+    evTit: "O que você deve evitar",
+    evitar: ["Não use a quantidade de atenção recebida como medida do seu valor pessoal.", "A falta de reciprocidade em uma relação específica não determina o seu valor nem significa que você precise se esforçar mais para conquistar alguém.", "Também não conclua automaticamente que toda demonstração de atenção tem uma intenção romântica."],
+    prox: ["Reduza as suposições e procure clareza.", "Se a aproximação continuar desequilibrada, considere se vale a pena continuar investindo nela.", "Você pode comunicar o que deseja, ouvir a resposta e decidir se a situação corresponde às suas expectativas."],
+    botao: "QUERO SABER COMO ESCLARECER AS INTENÇÕES →" },
+  E: { indica: ["Talvez ainda existam poucas interações para compreender a direção da relação.", "Uma conversa agradável, uma mensagem inesperada ou um encontro positivo podem ser sinais de aproximação, mas não permitem determinar, isoladamente, as intenções de alguém.", "Não ter informações suficientes não significa que exista algo errado. Significa apenas que ainda é cedo para concluir."],
+    atencao: ["Ele procura oportunidades para voltar a falar com você?", "Demonstra curiosidade de forma espontânea?", "Existe continuidade depois dos primeiros contatos?", "As atitudes são respeitosas?", "Vocês têm oportunidades suficientes para se conhecer?", "Você está observando comportamentos concretos ou tentando interpretar cada detalhe?"],
+    evTit: "O que você deve evitar",
+    evitar: ["Não tente interpretar cada detalhe como se fosse uma mensagem escondida.", "Também não precisa decidir imediatamente se existe ou não interesse.", "Permita que a interação evolua naturalmente, sem abandonar seus limites ou criar expectativas baseadas em informações insuficientes."],
+    prox: ["Continue conhecendo a pessoa, se isso fizer sentido para você.", "Observe se existe reciprocidade ao longo do tempo e procure conhecer as intenções dela por meio de uma conversa quando houver espaço para isso."],
+    botao: "QUERO SABER O QUE OBSERVAR →" }
+};
+
+const SINAIS = [
+  ["ELE TAMBÉM TOMA INICIATIVA", "Quando existe participação dos dois, a aproximação tende a ser menos unilateral.", "Ele também inicia conversas ou procura oportunidades para manter contato.", "A frequência da iniciativa varia entre pessoas. Não tire conclusões com base em um único dia."],
+  ["DEMONSTRA CURIOSIDADE SOBRE VOCÊ", "Fazer perguntas, ouvir suas respostas e lembrar informações relevantes pode demonstrar atenção genuína.", "Ele pergunta sobre algo importante que você mencionou anteriormente.", "Curiosidade pode indicar interesse na interação, mas não confirma necessariamente interesse romântico."],
+  ["PROCURA MANTER A CONVERSA", "A vontade de prolongar uma conversa pode demonstrar interesse em interagir.", "Ele faz perguntas, desenvolve os assuntos e participa ativamente da conversa.", "Algumas pessoas comunicam-se de maneira mais reservada. Considere o contexto."],
+  ["CUMPRE O QUE COMBINA", "A coerência entre palavras e ações ajuda a avaliar a confiabilidade de alguém.", "Quando combina algo com você, procura cumprir o combinado ou comunica mudanças de forma respeitosa.", "Imprevistos acontecem. Observe o padrão, não um episódio isolado."],
+  ["RESPEITA SEUS LIMITES", "Uma aproximação saudável não depende de pressão, insistência indesejada ou desrespeito pelas suas decisões.", "Ele aceita quando você diz que não quer fazer algo ou que precisa de espaço.", "Respeito é fundamental independentemente de existir interesse romântico."],
+  ["RETOMA O CONTATO", "Voltar a procurar você pode indicar vontade de manter a ligação.", "Depois de uma conversa, ele volta a falar espontaneamente em outro momento.", "Considere a qualidade, a consistência e o contexto do contato."],
+  ["DEMONSTRA DISPONIBILIDADE", "Observe se ele cria oportunidades realistas para conversar ou estar com você.", "Ele procura combinar um encontro ou encontrar um momento adequado para conversar.", "A disponibilidade depende das circunstâncias. O que importa é perceber se existe disposição compatível com a realidade de ambos."],
+  ["EXISTE RECIPROCIDADE", "Você não precisa carregar sozinha toda a responsabilidade pela aproximação.", "Os dois demonstram iniciativa, participam das conversas e contribuem para o vínculo.", "Reciprocidade não significa dividir cada iniciativa exatamente pela metade."],
+  ["COMUNICA COM CLAREZA", "Quando surgem dúvidas, uma conversa honesta pode esclarecer melhor a situação do que a interpretação de sinais isolados.", "Ele consegue conversar sobre expectativas e responder com respeito a perguntas relevantes.", "Uma resposta pode não ser aquela que você esperava, mas a clareza ajuda a tomar decisões conscientes."],
+  ["O COMPORTAMENTO MANTÉM-SE AO LONGO DO TEMPO", "Padrões repetidos geralmente são mais informativos do que gestos isolados.", "A participação e o respeito continuam presentes em diferentes situações.", "As pessoas podem mudar de comportamento por diferentes razões. Observe tendências sem presumir que conhece todas as causas."]
+];
+const SINAIS_FIM = "Nenhum sinal isolado prova o que outra pessoa sente. O contexto, a consistência e a comunicação direta também importam.";
+
+const ERROS = [
+  ["INTERPRETAR UMA MENSAGEM COMO PROVA DE INTERESSE", ["Uma mensagem pode ter vários significados.", "Em vez de tirar uma conclusão imediata, observe como a interação evolui e se existe consistência."], "Considere o conjunto dos comportamentos e, quando necessário, procure esclarecer as intenções por meio de uma conversa."],
+  ["CONFUNDIR ATENÇÃO COM INTENÇÃO DE COMPROMISSO", ["Gostar da interação não significa necessariamente querer uma relação."], "Procure compreender o que cada pessoa deseja, em vez de presumir que existe o mesmo objetivo."],
+  ["JUSTIFICAR TODA A FALTA DE RECIPROCIDADE", ["Considerar o contexto é importante, mas as suas necessidades também contam."], "Observe se o desequilíbrio é ocasional ou recorrente e avalie como essa dinâmica afeta você."],
+  ["ANALISAR CADA DETALHE ISOLADAMENTE", ["Uma mensagem curta, uma demora para responder ou uma mudança de planos não explicam, sozinhas, o que alguém sente."], "Observe padrões e considere outras explicações plausíveis."],
+  ["IGNORAR O QUE VOCÊ DESEJA", ["A análise não deve se concentrar apenas em descobrir o que ele quer.", "Você também precisa considerar aquilo que procura em uma relação."], "Defina suas expectativas, seus limites e o tipo de aproximação que faz sentido para você."]
+];
+const PERGUNTA_ERROS = "Estou tentando compreender essa relação ou procurando uma confirmação para aquilo que espero que aconteça?";
+
+const DIAS = [
+  ["DIA 1 — INICIATIVA", "Quem iniciou o contato hoje?", ["Como aconteceu a interação?", "Houve iniciativa dos dois lados?", "Estou observando um padrão ou apenas um episódio?"]],
+  ["DIA 2 — INTERESSE NA CONVERSA", "Ele demonstrou curiosidade sobre você?", ["Fez perguntas?", "Prestou atenção ao que você disse?", "A conversa aconteceu de forma natural?"]],
+  ["DIA 3 — RECIPROCIDADE", "A interação foi equilibrada ou dependeu principalmente do seu esforço?", ["Quem tomou a iniciativa?", "Os dois participaram?", "Existe algum padrão que mereça atenção?"]],
+  ["DIA 4 — COERÊNCIA", "Houve alguma diferença relevante entre o que ele disse e o que fez?", ["Existia algum combinado?", "Ele cumpriu o que foi combinado?", "Houve alguma explicação para uma mudança?"]],
+  ["DIA 5 — DISPONIBILIDADE", "Ele demonstrou disponibilidade para manter a aproximação?", ["Procurou conversar ou estar com você?", "As circunstâncias permitiram essa aproximação?", "Existiu disposição dos dois lados?"]],
+  ["DIA 6 — COMUNICAÇÃO", "Existe alguma dúvida que poderia ser esclarecida por meio de uma conversa respeitosa?", ["O que você deseja compreender?", "Qual é a pergunta mais importante neste momento?", "Como pode expressar sua dúvida sem pressionar a outra pessoa?"]],
+  ["DIA 7 — REFLEXÃO FINAL", "O que você observou ao longo da semana?", ["Que comportamentos se repetiram?", "O que continua sem resposta?", "Que conclusões seriam precipitadas?", "Qual é o próximo passo que respeita seus objetivos?"]]
+];
+
+const MENSAGENS = [
+  ["SITUAÇÃO A — COMPREENDER AS INTENÇÕES", "“Gosto de conhecer você e tenho interesse em entender melhor o que estamos construindo. Queria saber como você vê a nossa aproximação.”"],
+  ["SITUAÇÃO B — COMUNICAÇÃO IRREGULAR", "“Tenho notado que, às vezes, conversamos bastante e, em outros momentos, ficamos muito distantes. Gostaria de entender como você prefere manter o contato.”"],
+  ["SITUAÇÃO C — FALTA DE RECIPROCIDADE", "“Gosto de conversar com você, mas também valorizo sentir que existe vontade dos dois lados. Como você vê a nossa aproximação?”"],
+  ["SITUAÇÃO D — COMPREENDER AS EXPECTATIVAS", "“Quero conhecer você melhor, mas também gosto de ser clara sobre o que procuro. Você está aberto a construir uma relação ou prefere algo sem compromisso neste momento?”"],
+  ["SITUAÇÃO E — PEDIR CLAREZA SEM PRESSIONAR", "“Quero respeitar o seu tempo, mas também preciso entender se estamos buscando algo parecido. Você se sente confortável para conversar sobre isso?”"]
+];
+
+const PROXIMOS = {
+  C: { rec: ["Continue conhecendo a pessoa e observe se existe compatibilidade entre as expectativas de vocês.", "Não é necessário apressar a relação nem presumir compromisso apenas porque existem sinais positivos."], passos: ["Continue a conhecer a pessoa.", "Observe a consistência das atitudes.", "Reflita sobre o que você deseja.", "Converse sobre expectativas quando fizer sentido."] },
+  O: { rec: ["Procure compreender o padrão sem interpretar cada mudança como uma prova definitiva de interesse ou desinteresse."], passos: ["Observe se as oscilações se repetem.", "Considere as circunstâncias.", "Avalie a reciprocidade.", "Converse sobre a comunicação se a dúvida persistir.", "Considere se a dinâmica atende às suas necessidades."] },
+  R: { rec: ["Avalie se existe participação dos dois lados e procure clareza sobre as intenções."], passos: ["Observe quem toma iniciativa.", "Considere se existe esforço mútuo.", "Comunique o que você procura.", "Avalie a resposta e as atitudes posteriores.", "Decida se vale a pena continuar investindo nessa aproximação."] },
+  E: { rec: ["Permita que a interação evolua naturalmente, sem transformar pequenos acontecimentos em conclusões definitivas."], passos: ["Continue conhecendo a pessoa, se desejar.", "Observe se existe continuidade.", "Evite criar expectativas baseadas em poucos acontecimentos.", "Mantenha seus limites.", "Procure clareza quando houver informação suficiente e espaço para uma conversa."] }
+};
+const RESUMO_O = { texto: ["O resultado sugere que vale a pena prestar atenção à consistência da comunicação e à participação dos dois na aproximação.", "Isso não significa necessariamente que ele esteja interessado ou desinteressado. O padrão pode ter diferentes explicações, e ainda é importante considerar o contexto."], foco: ["Observar se as oscilações se repetem.", "Avaliar se existe iniciativa dos dois lados.", "Evitar tirar conclusões com base em uma única interação.", "Procurar uma conversa clara se a dúvida continuar."], passo: "Escolha uma ação que ajude a esclarecer a situação sem pressionar a outra pessoa nem desconsiderar aquilo de que você precisa." };
+
+/* ---------- ARMAZENAMENTO LOCAL ---------- */
+const CHAVE = "radar_analise_v1";
+let D = { perfil: null, n: {} };
+function carregar() {
+  try { const x = JSON.parse(localStorage.getItem(CHAVE)); if (x && x.n) D = x; } catch (e) {}
+  const url = (new URLSearchParams(location.search).get("perfil") || "").toUpperCase();
+  let quiz = null; try { quiz = localStorage.getItem("radar_perfil"); } catch (e) {}
+  const p = [url, D.perfil, quiz].find(v => v && NOMES[v]);
+  D.perfil = p || null;
+}
+function salvar() { try { localStorage.setItem(CHAVE, JSON.stringify(D)); } catch (e) {} }
+
+/* ---------- AJUDAS DE INTERFACE ---------- */
+let T = 0;
+const h = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+const ps = (b, a, c) => a.forEach(x => b.appendChild(h("p", c, x)));
+const ul = (b, a) => { const u = h("ul"); a.forEach(x => u.appendChild(h("li", null, x))); b.appendChild(u); };
+const bt = (x, f, c) => { const b = h("button", c || "btn", x); b.type = "button"; b.onclick = f; return b; };
+const prox = (txt, i) => bt(txt, () => ir(i));
+function ir(i) { T = i; mostrar(); }
+
+function escolher(s) {
+  const c = h("div", "aviso");
+  c.appendChild(h("p", null, "Não identificamos o resultado do seu quiz neste aparelho. Escolha o perfil que você recebeu no quiz gratuito para ver o conteúdo personalizado:"));
+  s.appendChild(c);
+  Object.keys(NOMES).forEach(k => s.appendChild(bt(NOMES[k], () => { D.perfil = k; salvar(); mostrar(); }, "btn sec")));
+}
+function campo(box, chave, rot, ph, botao, ao) {
+  const l = h("label", "lab", rot), t = h("textarea"), m = h("p", "ok");
+  l.htmlFor = t.id = "c_" + chave; t.rows = 4; t.placeholder = ph; t.value = D.n[chave] || ""; m.setAttribute("aria-live", "polite");
+  box.append(l, t, bt(botao, () => { D.n[chave] = t.value.trim(); salvar(); m.textContent = "Registro salvo ✓"; if (ao) ao(); }, "btn sec peq"), m);
+}
+function expansivel(box, rotulo, montar) {
+  const c = h("div", "exp"); c.hidden = true; montar(c);
+  const b = bt(rotulo, () => { c.hidden = !c.hidden; b.setAttribute("aria-expanded", !c.hidden); }, "btn sec peq");
+  b.setAttribute("aria-expanded", "false"); box.append(b, c);
+}
+
+/* ---------- TELAS ---------- */
+const TELAS = [
+  function (s) {
+    s.appendChild(h("h1", null, "RADAR DO INTERESSE")); s.appendChild(h("h2", null, "SUA ANÁLISE COMPLETA"));
+    ps(s, BEM_VINDA);
+    if (D.perfil) s.appendChild(h("p", "tag", "Seu perfil: " + NOMES[D.perfil])); else escolher(s);
+    const c = h("div", "card"); c.appendChild(h("h3", null, "O que você vai encontrar")); ul(c, BENEFICIOS); s.appendChild(c);
+    s.appendChild(prox("COMEÇAR MINHA ANÁLISE →", 1)); s.appendChild(h("p", "nota", AVISO));
+  },
+  function (s) {
+    s.appendChild(h("h2", null, "O que você deve observar?"));
+    MAPA.forEach(([t, q, e, pts]) => {
+      const c = h("div", "card"); c.appendChild(h("h3", null, t)); c.appendChild(h("p", null, q)); c.lastChild.style.fontWeight = "600"; ps(c, e, "apoio");
+      expansivel(c, "O que devo observar?", x => { x.appendChild(h("h3", null, "Pontos para observar")); ul(x, pts); });
+      s.appendChild(c);
+    });
+    s.appendChild(prox("CONTINUAR PARA MINHA ANÁLISE →", 2));
+  },
+  function (s) {
+    if (!D.perfil) { s.appendChild(h("h2", null, "Análise do seu perfil")); escolher(s); return; }
+    const p = PERFIS[D.perfil];
+    s.appendChild(h("p", "tag", "Seu perfil: " + NOMES[D.perfil]));
+    const grupos = [["O que esse padrão pode indicar", p.indica], ["O que merece sua atenção", p.atencao], [p.evTit, p.evitar], ["Seu próximo passo", p.prox]];
+    grupos.forEach(([t, a], i) => { const c = h("div", "card"); c.appendChild(h("h3", null, t)); if (i === 1) ul(c, a); else ps(c, a); s.appendChild(c); });
+    s.appendChild(prox(p.botao, 3));
+  },
+  function (s) {
+    s.appendChild(h("h2", null, "Os 10 sinais que merecem atenção"));
+    SINAIS.forEach(([t, e, ex, im], i) => {
+      const c = h("div", "card"); c.appendChild(h("p", "tag", "Sinal " + (i + 1))); c.appendChild(h("h3", null, t)); c.appendChild(h("p", null, e));
+      const a = h("p"); a.append(h("strong", null, "Exemplo: "), ex); c.appendChild(a);
+      const b = h("p", "apoio"); b.append(h("strong", null, "Importante: "), im); c.appendChild(b); s.appendChild(c);
+    });
+    s.appendChild(h("p", "aviso", SINAIS_FIM)); s.appendChild(prox("CONTINUAR PARA OS ERROS DE INTERPRETAÇÃO →", 4));
+  },
+  function (s) {
+    s.appendChild(h("h2", null, "Cinco erros de interpretação"));
+    ERROS.forEach(([t, e, como], i) => {
+      const c = h("div", "card"); c.appendChild(h("p", "tag", "Erro " + (i + 1))); c.appendChild(h("h3", null, t)); ps(c, e);
+      expansivel(c, "Como evitar este erro?", x => { const q = h("p"); q.append(h("strong", null, "Como evitar: "), como); x.appendChild(q); });
+      s.appendChild(c);
+    });
+    const r = h("div", "card"); r.appendChild(h("h3", null, "Para refletir")); r.appendChild(h("p", null, PERGUNTA_ERROS));
+    campo(r, "erros", "Sua reflexão (opcional)", "Minha reflexão...", "GUARDAR REFLEXÃO"); s.appendChild(r);
+    s.appendChild(prox("COMEÇAR MEU PLANO DE 7 DIAS →", 5));
+  },
+  function (s) {
+    s.appendChild(h("h2", null, "Plano de observação de 7 dias"));
+    s.appendChild(h("p", "apoio", "Registre o que acontece naturalmente. Não é preciso testar ninguém nem vigiar nada: o objetivo é observar com calma."));
+    const pg = h("p", "tag"), contar = () => { const n = DIAS.filter((_, i) => D.n["d" + (i + 1)]).length; pg.textContent = "Progresso: " + n + " de 7 dias"; return n; };
+    s.appendChild(pg); contar();
+    DIAS.forEach(([t, q, comp], i) => {
+      const k = "d" + (i + 1), c = h("div", "card"), cab = h("h3", null, t), ok = h("span", "feito", D.n[k] ? " ✓" : "");
+      cab.appendChild(ok); c.appendChild(cab); c.appendChild(h("p", null, q)); c.lastChild.style.fontWeight = "600"; ul(c, comp);
+      campo(c, k, i === 6 ? "Minha reflexão final" : "Minhas observações", i === 6 ? "Minha reflexão final..." : "Minhas observações de hoje...", i === 6 ? "GUARDAR REFLEXÃO FINAL" : "GUARDAR OBSERVAÇÃO", () => { ok.textContent = D.n[k] ? " ✓" : ""; contar(); });
+      s.appendChild(c);
+    });
+    s.appendChild(h("p", "nota", ARMAZENAMENTO + " O plano não é um diagnóstico nem um método para confirmar sentimentos."));
+    const res = h("div", "card"); res.hidden = true;
+    s.appendChild(bt("VER MEU RESUMO →", () => {
+      res.innerHTML = ""; res.appendChild(h("h3", null, "Resumo dos seus registros"));
+      const feitos = DIAS.filter((_, i) => D.n["d" + (i + 1)]);
+      if (!feitos.length) res.appendChild(h("p", null, "Você ainda não salvou nenhum registro."));
+      DIAS.forEach(([t], i) => { const v = D.n["d" + (i + 1)]; if (v) { res.appendChild(h("h3", null, t)); res.appendChild(h("p", null, v)); } });
+      res.hidden = false; res.scrollIntoView({ behavior: "smooth" });
+    }));
+    s.appendChild(res);
+    s.appendChild(bt("APAGAR TODOS OS MEUS REGISTROS", () => { if (confirm("Apagar todos os registros e reflexões salvos neste aparelho?")) { D.n = {}; salvar(); mostrar(); } }, "link"));
+    s.appendChild(prox("CONTINUAR PARA COMO CONVERSAR →", 6));
+  },
+  function (s) {
+    s.appendChild(h("h2", null, "Menos suposições. Mais clareza."));
+    ps(s, ["Você não precisa encontrar a mensagem perfeita para descobrir o que alguém sente.", "Uma conversa respeitosa pode ajudar você a compreender as expectativas da outra pessoa e a comunicar aquilo que também deseja.", "Os exemplos a seguir são pontos de partida. Adapte as palavras à sua maneira de falar e à fase da relação."]);
+    MENSAGENS.forEach(([t, m]) => {
+      const c = h("div", "card"), ok = h("p", "ok"); ok.setAttribute("aria-live", "polite");
+      c.appendChild(h("h3", null, t)); c.appendChild(h("p", null, m));
+      c.append(bt("COPIAR MENSAGEM", () => copiar(m, ok), "btn sec peq"), ok); s.appendChild(c);
+    });
+    s.appendChild(prox("CONTINUAR PARA MEUS PRÓXIMOS PASSOS →", 7));
+  },
+  function (s) {
+    s.appendChild(h("h2", null, "O que fazer a seguir"));
+    if (!D.perfil) { escolher(s); return; }
+    const n = PROXIMOS[D.perfil]; s.appendChild(h("p", "tag", "Seu perfil: " + NOMES[D.perfil]));
+    const a = h("div", "card"); a.appendChild(h("h3", null, "Recomendação")); ps(a, n.rec); s.appendChild(a);
+    const b = h("div", "card"); b.appendChild(h("h3", null, "Próximos passos")); ul(b, n.passos); s.appendChild(b);
+    const c = h("div", "card"); c.appendChild(h("h3", null, "Qual é o próximo passo que faz sentido para mim?"));
+    campo(c, "prox", "Minha reflexão", "Meu próximo passo será...", "GUARDAR MINHA REFLEXÃO"); s.appendChild(c);
+    s.appendChild(prox("GERAR MEU RESUMO FINAL →", 8));
+  },
+  function (s) {
+    s.appendChild(h("h2", null, "SEU RESUMO — RADAR DO INTERESSE"));
+    if (!D.perfil) { s.appendChild(h("p", "aviso", "Ainda não existem dados suficientes para montar seu resumo. Escolha o perfil que você recebeu no quiz.")); escolher(s); return; }
+    const k = D.perfil, p = PERFIS[k], n = PROXIMOS[k], o = k === "O";
+    const bloco = (t, f) => { const c = h("div", "card"); c.appendChild(h("h3", null, t)); f(c); s.appendChild(c); };
+    bloco("Perfil identificado", c => c.appendChild(h("p", "tag", NOMES[k].toUpperCase())));
+    bloco("O padrão", c => ps(c, o ? RESUMO_O.texto : p.indica.slice(0, 2)));
+    bloco(o ? "Seu foco agora" : "Pontos que merecem atenção", c => ul(c, o ? RESUMO_O.foco : p.atencao));
+    bloco("Erros de interpretação a evitar", c => ul(c, ERROS.map(e => e[0].charAt(0) + e[0].slice(1).toLowerCase())));
+    bloco("Recomendação principal", c => ps(c, n.rec));
+    bloco("Seu próximo passo", c => ps(c, o ? [RESUMO_O.passo] : p.prox));
+    const refl = [["Sua reflexão sobre interpretar sinais", D.n.erros], ["Sua reflexão final da semana", D.n.d7], ["O próximo passo que você escolheu", D.n.prox]].filter(x => x[1]);
+    if (refl.length) bloco("Suas reflexões", c => refl.forEach(([t, v]) => { c.appendChild(h("p", "lab", t)); c.appendChild(h("p", null, v)); }));
+    s.appendChild(bt("REVER MINHA ANÁLISE", () => ir(2), "btn sec"));
+    s.appendChild(bt("RECOMEÇAR", () => { if (confirm("Recomeçar vai apagar seus registros e reflexões salvos neste aparelho. Deseja continuar?")) { D.n = {}; salvar(); ir(0); } }, "link"));
+    s.appendChild(h("p", "nota", AVISO));
+  }
+];
+
+function copiar(texto, aviso) {
+  const ok = () => { aviso.textContent = "Mensagem copiada!"; };
+  const reserva = () => { const t = h("textarea"); t.value = texto; document.body.appendChild(t); t.select(); try { document.execCommand("copy") ? ok() : (aviso.textContent = "Não foi possível copiar. Selecione o texto e copie manualmente."); } catch (e) { aviso.textContent = "Não foi possível copiar. Selecione o texto e copie manualmente."; } t.remove(); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(texto).then(ok, reserva); else reserva();
+}
+
+function mostrar() {
+  const app = $a(), s = h("section", "tela"), topo = h("div", "topo");
+  const pr = h("div", "prog"), b = h("div", "barra"); b.style.width = Math.round((T + 1) / 9 * 100) + "%"; pr.appendChild(b);
+  const ln = h("div", "linha"), sel = h("select"); sel.setAttribute("aria-label", "Ir para a seção");
+  ETAPAS.forEach((e, i) => { const o = h("option", null, (i + 1) + ". " + e); o.value = i; if (i === T) o.selected = true; sel.appendChild(o); });
+  sel.onchange = () => ir(+sel.value);
+  ln.append(h("span", null, "Etapa " + (T + 1) + " de 9"), sel); topo.append(pr, ln);
+  app.innerHTML = ""; app.appendChild(topo);
+  if (T > 0) s.appendChild(bt("← Voltar", () => ir(T - 1), "link"));
+  TELAS[T](s); app.appendChild(s); window.scrollTo(0, 0);
+}
+function $a() { return document.getElementById("app"); }
+
+if (typeof window !== "undefined") { carregar(); mostrar(); }
+</script>
+</body>
+</html>
